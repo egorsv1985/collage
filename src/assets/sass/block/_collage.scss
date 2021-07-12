@@ -1,39 +1,3 @@
-@font-face {
-	font-family: Muli;
-	src: url("../fonts/Muli-ExtraBold.woff") format("woff");
-	font-weight: 800;
-	font-display: swap;
-}
-@font-face {
-	font-family: Muli;
-	src: url("../fonts/Muli-Regular.woff") format("woff");
-	font-weight: 400;
-	font-display: swap;
-}
-
-:root {
-	box-sizing: border-box;
-	font-size: 100%;
-	/* 10px */
-}
-
-*,
-*::after,
-*::before {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
-}
-
-body {
-	font-family: Muli, sans-serif;
-	color: rgb(176, 89, 202);
-	margin: 0;
-}
-img {
-	width: 100%;
-}
-
 .collage__wrapper {
 	display: flex;
 	flex-wrap: wrap;

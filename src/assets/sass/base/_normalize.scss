@@ -7,13 +7,39 @@
  * 1. Correct the line height in all browsers.
  * 2. Prevent adjustments of font size after orientation changes in iOS.
  */
+*,
+*::after,
+*::before {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Muli, sans-serif;
+	color: rgb(176, 89, 202);
+	margin: 0;
+}
+img {
+	width: 100%;
+}
 
 html {
   line-height: 1.15;
   /* 1 */
   -webkit-text-size-adjust: 100%;
   /* 2 */
+
+  font-size: 100%;
+
+
 }
+
+
+/* проблема переполнения */
+// * {
+// 	outline: solid 1px red;
+// } 
 
 /* Sections
    ========================================================================== */
@@ -22,9 +48,7 @@ html {
  * Remove the margin in all browsers.
  */
 
-body {
-  margin: 0;
-}
+
 
 ul,
 p,
@@ -47,6 +71,11 @@ h6 {
 /**
  * Render the `main` element consistently in IE.
  */
+a,
+img {
+  display: block;
+
+}
 
 main {
   display: block;
@@ -57,10 +86,6 @@ main {
  * `article` contexts in Chrome, Firefox, and Safari.
  */
 
-h1 {
-  font-size: 2em;
-  margin: 0.67em 0;
-}
 
 /* Grouping content
    ========================================================================== */
@@ -179,6 +204,7 @@ sup {
 
 img {
   border-style: none;
+
 }
 
 /* Forms
@@ -191,7 +217,9 @@ img {
 button {
   background-color: transparent;
   border: none;
+  cursor: pointer;
 }
+
 button,
 input,
 optgroup,

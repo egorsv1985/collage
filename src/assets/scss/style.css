@@ -392,22 +392,9 @@ template {
   display: none;
 }
 
-@font-face {
-  font-family: Muli;
-  src: url("../fonts/Muli-ExtraBold.woff") format("woff");
-  font-weight: 800;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: Muli;
-  src: url("../fonts/Muli-Regular.woff") format("woff");
-  font-weight: 400;
-  font-display: swap;
-}
-
 .collage {
   height: 100vh;
+  background-color: #6fc7ce;
 }
 
 .collage__wrapper {
@@ -419,9 +406,8 @@ template {
 }
 
 .collage__float {
+  position: relative;
   width: 25%;
-  height: 50%;
-  display: flow-root;
 }
 
 .collage__img {
@@ -434,6 +420,7 @@ template {
   float: left;
   -o-object-fit: cover;
      object-fit: cover;
+  position: relative;
 }
 
 .collage__img:hover {

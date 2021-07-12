@@ -1,0 +1,82 @@
+@font-face {
+	font-family: Muli;
+	src: url("../fonts/Muli-ExtraBold.woff") format("woff");
+	font-weight: 800;
+	font-display: swap;
+}
+@font-face {
+	font-family: Muli;
+	src: url("../fonts/Muli-Regular.woff") format("woff");
+	font-weight: 400;
+	font-display: swap;
+}
+
+:root {
+	box-sizing: border-box;
+	font-size: 100%;
+	/* 10px */
+}
+
+*,
+*::after,
+*::before {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Muli, sans-serif;
+	color: rgb(176, 89, 202);
+	margin: 0;
+}
+img {
+	width: 100%;
+}
+
+.collage__wrapper {
+	display: flex;
+	flex-wrap: wrap;
+}
+.collage__float {
+	width: 25%;
+	height: 50%;
+	display: flow-root;
+}
+.collage__text {
+	font-size: 1.125rem;
+	/* 18px */
+	line-height: 2em;
+	/* 35px */
+}
+
+.collage__img {
+	transform: scale(1);
+	width: 100%;
+	height: 100%;
+	transition: all 2s ease;
+	float: left;
+	-webkit-transition: all 2s ease;
+	-moz-transition: all 2s ease;
+	-ms-transition: all 2s ease;
+	-o-transition: all 2s ease;
+	-webkit-transform: scale(1);
+	-moz-transform: scale(1);
+	-ms-transform: scale(1);
+	-o-transform: scale(1);
+}
+.collage__float:first-child {
+	transform: scale(1.5) rotate(-10deg);
+	-webkit-transform: scale(1.5) rotate(-10deg);
+	-moz-transform: scale(1.5) rotate(-10deg);
+	-ms-transform: scale(1.5) rotate(-10deg);
+	-o-transform: scale(1.5) rotate(-10deg);
+	z-index: 1;
+}
+.collage__img:hover {
+	transform: scale(1.2);
+	-webkit-transform: scale(1.2);
+	-moz-transform: scale(1.2);
+	-ms-transform: scale(1.2);
+	-o-transform: scale(1.2);
+}

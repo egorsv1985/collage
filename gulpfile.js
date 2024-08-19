@@ -1,310 +1,77 @@
-"use strict";
+// Импорт основного модуля
+import { plugins } from './gulp/config/plugins.js'
+import { paths } from './gulp/config/paths.js'
 
-// Подключаем модули
-const {
-    src,
-    dest
-} = require('gulp');
-const gulp = require('gulp');
-const sourcemaps = require('gulp-sourcemaps'); // благодаря ему в браузере видим не минифицированный код, а привычную разметку
-const autoprefixer = require('gulp-autoprefixer'); // расставляет префиксы для поддержки свойств в разных браузерах
-const cssbeautify = require('gulp-cssbeautify'); // форматирует css, чтобы он был легким для чтения
-const removeComments = require('gulp-strip-css-comments'); // удаляет комментарии
-const rename = require('gulp-rename'); // для переименования файлов
-const sass = require('gulp-sass'); // для компиляции sass в css
-const postcss = require('gulp-postcss');
-const pxtorem = require('postcss-pxtorem');
-const cssnano = require('gulp-cssnano'); //для минификации css
-const uglify = require('gulp-uglify'); // для минификации (сжатия) js-кода. Обратного преобразования нет.
-const concat = require('gulp-concat'); //"склеивает" несколько файлов в один
-const plumber = require('gulp-plumber'); // для обработки ошибок
-const imagemin = require('gulp-imagemin'); //для минификации изображений
-const del = require('del'); // для удаления файлов и папок
-const notify = require('gulp-notify'); //предоставляет информацию об ошибке
-const browserSync = require('browser-sync').create(); // для запуска сервера и перезагрузки страницы при внесении изменений
+// Импорт задач
+import { archive } from './gulp/tasks/archive.js'
+import { cleanTask } from './gulp/tasks/cleanTask.js'
+import { files } from './gulp/tasks/files.js'
+import { fonts } from './gulp/tasks/fonts.js'
+import { html } from './gulp/tasks/html.js'
+import { images } from './gulp/tasks/images.js'
+import { scripts } from './gulp/tasks/scripts.js'
+import { scriptsMin } from './gulp/tasks/scriptsMin.js'
+import { server } from './gulp/tasks/server.js'
+import { styles } from './gulp/tasks/styles.js'
+import { stylesMin } from './gulp/tasks/stylesMin.js'
 
+// Экспорт задач
 
-// Пути 
-const srcPath = 'src/';
-const distPath = 'dist/';
-
-const path = {
-    // Исходные файлы. С этими файлами мы будем работать 
-    src: {
-        html: srcPath + "*.html",
-        js: srcPath + "assets/js/*.js",
-        css: srcPath + "assets/scss/**/*.scss",
-        images: srcPath + "assets/images/**/*.{jpg,png,svg,gif,ico,webp,webmanifest,xml,json}",
-        fonts: srcPath + "assets/fonts/**/*.{eot,woff,woff2,ttf,svg}"
-    },
-    // В эти папки будут собираться файлы 
-    build: {
-        html: distPath,
-        js: distPath + "assets/js/",
-        css: distPath + "assets/css/",
-        images: distPath + "assets/images/",
-        fonts: distPath + "assets/fonts/"
-    },
-    // За этими файлами мы будем следить. При изменении этих файлов бдет перезагружаться браузер
-    watch: {
-        html: srcPath + "**/*.html",
-        js: srcPath + "assets/js/**/*.js",
-        css: srcPath + "assets/scss/**/*.scss",
-        images: srcPath + "assets/images/**/*.{jpg,png,svg,gif,ico,webp,webmanifest,xml,json}",
-        fonts: srcPath + "assets/fonts/**/*.{eot,woff,woff2,ttf,svg}"
-    },
-    clean: "./" + distPath
+export {
+	archive,
+	cleanTask,
+	files,
+	fonts,
+	html,
+	images,
+	scripts,
+	scriptsMin,
+	server,
+	styles,
+	stylesMin,
 }
 
-// Если нужно выполнять преобразование файлов в определенном порядке, то используем массив с нужным нам порядком:
-const jsFiles = [
-    srcPath + 'assets/js/script.js',
-]
-
-
-// TASKS
-// объявляем функции под сборки (все пути относительные)
-
-// Локальный сервер
-function serve() {
-    browserSync.init({
-        server: {
-            baseDir: "./" + distPath
-        }
-    });
+// Задача для отслеживания изменений в файлах и автоматической пересборки
+export const watch = () => {
+	plugins.gulp.watch(paths.src.scss, plugins.gulp.series('styles'))
+	plugins.gulp.watch(paths.src.html, plugins.gulp.series('html'))
+	plugins.gulp.watch(paths.src.images, plugins.gulp.series('images'))
+	plugins.gulp.watch(paths.src.fonts, plugins.gulp.series('fonts'))
+	plugins.gulp.watch(paths.src.files, plugins.gulp.series('files'))
+	plugins.gulp.watch(paths.src.js, plugins.gulp.series('scripts'))
 }
 
-// HTML 
-function html(cb) {
-    return src(path.src.html, {
-            base: srcPath
-        })
-        //.pipe() - Это 1 конкретное действие, которое мы хотим совершить над нашими файлами.
-        .pipe(plumber())
-        .pipe(dest(path.build.html))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
+// Задача для разработки
+export const dev = plugins.gulp.series(
+	cleanTask,
+	plugins.gulp.parallel(html, styles, images, fonts, files, scripts),
+	plugins.gulp.parallel(server, watch)
+)
 
-    cb();
-}
+// Задача для продакшн
+export const docs = plugins.gulp.series(
+	cleanTask,
+	plugins.gulp.parallel(html, styles, images, fonts, files, scripts),
+	server
+)
 
-// CSS 
-function css(cb) {
-    src(srcPath + 'assets/scss/style.scss') // если нужно компилировать 1 файл, то return src(srcPath + 'assets/scss/main.scss') 
-        .pipe(sourcemaps.init())
-        .pipe(plumber({
-            errorHandler: function (err) {
-                notify.onError({
-                    title: "SCSS Error",
-                    message: "Error: <%= error.message %>"
-                })(err);
-                this.emit('end');
-            }
-        }))
-        .pipe(sass({
-            includePaths: './node_modules/'
+// Задача для архивации проекта без минификации
+export const zipTask = plugins.gulp.series(
+	cleanTask,
+	plugins.gulp.parallel(html, styles, images, fonts, files, scripts),
+	archive
+)
 
+// Задача для архивации проекта с минификацией
+export const zipTaskMin = plugins.gulp.series(
+	cleanTask,
+	plugins.gulp.parallel(html, styles, images, fonts, files, scripts),
+	stylesMin,
+	scriptsMin,
+	archive
+)
 
-        }))
-        // .pipe(postcss(
-        //     [
-        //         pxtorem({
-        //             propList: ['*'],
-        //             mediaQuery: true,
-        //         }),
-        //     ],
-        // ))
+// Задача для минификации стилей и JavaScript
+export const min = plugins.gulp.series(stylesMin, scriptsMin)
 
-        .pipe(autoprefixer({
-            cascade: true
-        }))
-        .pipe(cssbeautify())
-        .pipe(concat('style.css'))
-        .pipe(dest(path.build.css))
-        .pipe(cssnano({
-            zindex: false,
-            discardComments: {
-                removeAll: true
-            }
-        }))
-        .pipe(removeComments())
-        .pipe(rename({
-            suffix: ".min",
-            extname: ".css"
-        }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest(path.build.css))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// Для быстрой компиляции CSS во время разработки 
-function cssWatch(cb) {
-    src(srcPath + 'assets/scss/style.scss') // если нужно компилировать 1 файл, то return src(srcPath + 'assets/scss/main.scss')  
-        .pipe(sourcemaps.init())
-        .pipe(plumber({
-            errorHandler: function (err) {
-                notify.onError({
-                    title: "SCSS Error",
-                    message: "Error: <%= error.message %>"
-                })(err);
-                this.emit('end');
-            }
-        }))
-        .pipe(sass({
-            includePaths: './node_modules/'
-
-        }))
-        .pipe(concat('style.css'))
-        .pipe(rename({
-            suffix: ".min",
-            extname: ".css"
-        }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest(path.build.css))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// JS 
-function js(cb) {
-    return src(jsFiles) // если порядок не важен, то берем все файлы: return src(path.src.js, {base: srcPath + 'assets/js/'})
-        .pipe(sourcemaps.init())
-        .pipe(plumber({
-            errorHandler: function (err) {
-                notify.onError({
-                    title: "JS Error",
-                    message: "Error: <%= error.message %>"
-                })(err);
-                this.emit('end');
-            }
-        }))
-        .pipe(concat('script.js'))
-        // .pipe(uglify({ //расскомментируй, если надо будет минифицировать js
-        //     toplevel: true //(опция модуля uglify) - как сильно сжимать. Есть три уговня, это самый сильный.
-        // }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest(path.build.js))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// Для быстрой компиляции JS во время разработки 
-function jsWatch(cb) {
-    return src(jsFiles) // если порядок не важен, то берем все файлы: return src(path.src.js, {base: srcPath + 'assets/js/'})
-        .pipe(sourcemaps.init())
-        .pipe(plumber({
-            errorHandler: function (err) {
-                notify.onError({
-                    title: "JS Error",
-                    message: "Error: <%= error.message %>"
-                })(err);
-                this.emit('end');
-            }
-        }))
-        .pipe(concat('script.js'))
-        // .pipe(uglify({ //расскомментируй, если надо будет минифицировать js
-        //     toplevel: true //(опция модуля uglify) - как сильно сжимать. Есть три уговня, это самый сильный.
-        // }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest(path.build.js))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// Images 
-function images(cb) {
-    return src(path.src.images)
-        .pipe(imagemin([
-            imagemin.gifsicle({
-                interlaced: true
-            }),
-            imagemin.mozjpeg({
-                quality: 95,
-                progressive: true
-            }),
-            imagemin.optipng({
-                optimizationLevel: 5
-            }),
-            imagemin.svgo({
-                plugins: [{
-                        removeViewBox: true
-                    },
-                    {
-                        cleanupIDs: false
-                    }
-                ]
-            })
-        ]))
-        .pipe(dest(path.build.images))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// Fonts 
-function fonts(cb) {
-    return src(path.src.fonts)
-        .pipe(dest(path.build.fonts))
-        .pipe(browserSync.reload({
-            stream: true
-        }));
-
-    cb();
-}
-
-// При сборке проекта удаляет папку dist и создает новую со свежими файлами 
-function clean(cb) {
-    return del(path.clean);
-    cb();
-}
-
-// Для слежки за файлами. Перезагрузит страницу, если что-то изменится 
-function watchFiles() {
-    gulp.watch([path.watch.html], html);
-    gulp.watch([path.watch.css], cssWatch);
-    gulp.watch([path.watch.js], jsWatch);
-    gulp.watch([path.watch.images], images);
-    gulp.watch([path.watch.fonts], fonts);
-}
-
-
-const build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts)); // Будет запускаться по команде gulp build
-const watch = gulp.series(build, gulp.parallel(serve, watchFiles)); // Будет запускаться по дефолтной команде gulp 
-
-
-// Экспорты тасок
-exports.html = html;
-exports.css = css;
-exports.js = js;
-exports.images = images;
-exports.fonts = fonts;
-exports.clean = clean;
-// exports.serve = serve;
-// exports.watchFiles = watchFiles;
-exports.build = build;
-exports.watch = watch;
-exports.default = watch;
-
-
-// На сервер (или заказчику) пойдет только папка dist
-
-// Как юзать этот сборщик в другом проекте:
-// 1. B папку с новым проектом переносим файлы gulpfile.js, package.json и папку src;
-// 2. B консоли пишем npm install (установятся все нужные модули);
-// 3. Соблюдаем файловую структуру или в сборках подправляем пути "откуда берем"/"куда кладем" файлы.
+export default dev
